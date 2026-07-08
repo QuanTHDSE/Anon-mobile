@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 
+import 'dart:math';
+
 import '../models/user.dart';
 import '../services/auth_service.dart';
+import '../services/google_auth.dart';
 import '../services/subscription_service.dart';
 import '../services/user_service.dart';
 
@@ -46,8 +49,20 @@ class AuthState extends ChangeNotifier {
     return res;
   }
 
+  /// Native Google Sign-In → exchange the ID token for an app session.
+  /// The backend generates the account on first login; we pass a random anon
+  /// alias like the web does (`ghost_xxxx`).
+  Future<void> loginWithGoogle() async {
+    final idToken = await GoogleAuth.instance.signInIdToken();
+    final suffix = Random().nextInt(1 << 20).toRadixString(36);
+    user = await AuthService.instance.loginWithGoogle(idToken, 'ghost_$suffix');
+    notifyListeners();
+    await refreshProfile();
+  }
+
   Future<void> logout() async {
     await AuthService.instance.logout();
+    await GoogleAuth.instance.signOut();
     user = null;
     profile = null;
     isPremium = false;

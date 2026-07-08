@@ -18,13 +18,35 @@ dependencies:
   image_picker: ^1.1.2
   intl: ^0.20.0
   flutter_svg: ^2.0.10+1
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
   assets:
     - assets/logo.svg
+    - assets/google_g.svg
+    - assets/icon/app_icon.png
+    - assets/icon/app_icon_foreground.png
+
+# Launcher icon generated from assets/logo.svg. Regenerate the source PNGs with
+#   flutter test tool/generate_icons.dart
+# then apply them with
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+  web:
+    generated: true
+    background_color: "#FFFFFF"
+    theme_color: "#F15B29"

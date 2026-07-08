@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/theme.dart';
+import '../services/google_auth.dart';
 import '../state/auth_state.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/google_button.dart';
 import 'forgot_password_screen.dart';
 import 'sign_up_screen.dart';
 
@@ -19,6 +21,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final _password = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
+  bool _googleLoading = false;
   String? _error;
 
   @override
@@ -45,6 +48,22 @@ class _SignInScreenState extends State<SignInScreen> {
       setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _googleSignIn() async {
+    setState(() {
+      _googleLoading = true;
+      _error = null;
+    });
+    try {
+      await context.read<AuthState>().loginWithGoogle();
+    } on GoogleSignInCancelled {
+      // User backed out — no error to show.
+    } catch (e) {
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _googleLoading = false);
     }
   }
 
@@ -142,6 +161,26 @@ class _SignInScreenState extends State<SignInScreen> {
                               strokeWidth: 2, color: Colors.white),
                         )
                       : const Text('Đăng nhập'),
+                ),
+                const SizedBox(height: 20),
+                // Divider "hoặc"
+                Row(
+                  children: const [
+                    Expanded(child: Divider(color: AppColors.border)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text('hoặc',
+                          style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                    Expanded(child: Divider(color: AppColors.border)),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                GoogleButton(
+                  loading: _googleLoading,
+                  onPressed: (_loading || _googleLoading) ? null : _googleSignIn,
                 ),
                 const SizedBox(height: 20),
                 Row(

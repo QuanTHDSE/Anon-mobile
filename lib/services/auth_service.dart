@@ -45,6 +45,16 @@ class AuthService {
     return data;
   }
 
+  /// Exchange a Google ID token for an app session — POST /api/v1/auth/google
+  /// with `{ idToken, anonAlias }` (port of web authService.loginWithGoogle).
+  Future<AppUser> loginWithGoogle(String idToken, String anonAlias) async {
+    final res = await _api.post('/api/v1/auth/google', {
+      'idToken': idToken,
+      'anonAlias': anonAlias,
+    }) as Map<String, dynamic>;
+    return _storeAuthResponse(res);
+  }
+
   Future<void> forgotPassword(String email) async {
     await _api.post('/api/v1/auth/forgot-password', {'email': email});
   }

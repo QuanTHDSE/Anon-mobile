@@ -56,6 +56,28 @@ Các hằng số cấu hình nằm trong [`lib/core/config.dart`](lib/core/confi
 
 Đổi API sang môi trường khác bằng cách sửa `apiBaseUrl` (và `cdnBaseUrl`) tại đây.
 
+### Đăng nhập bằng Google — cấu hình native (bắt buộc)
+
+App lấy **ID token** của Google qua [`google_sign_in`](https://pub.dev/packages/google_sign_in)
+rồi gửi tới `POST /api/v1/auth/google` (`{ idToken, anonAlias }`) — giống hệt web.
+`googleServerClientId` trong `config.dart` **phải trùng** `VITE_GOOGLE_CLIENT_ID` của web
+để backend chấp nhận token.
+
+Nút Google chỉ hoạt động khi đã đăng ký OAuth client trong **cùng project Google Cloud**
+với web client hiện tại (`268572852860-…`):
+
+- **Android** — tạo OAuth client loại *Android*:
+  - Package name: `com.example.anon_mobile` (xem `applicationId` trong
+    `android/app/build.gradle.kts` — đổi cho khớp nếu bạn đổi package).
+  - SHA-1: lấy bằng `cd android && ./gradlew signingReport` (khai báo cả SHA-1
+    debug lẫn release).
+  - Nếu thiếu bước này, `signIn()` báo `ApiException: 10 (DEVELOPER_ERROR)`.
+- **iOS** — tạo OAuth client loại *iOS*, thêm `REVERSED_CLIENT_ID` vào
+  `ios/Runner/Info.plist` (URL scheme).
+
+> Backend tự tạo tài khoản ở lần đăng nhập Google đầu tiên; app truyền một
+> `anonAlias` ngẫu nhiên dạng `ghost_xxxx` (giống web).
+
 ---
 
 ## Kiến trúc
@@ -100,6 +122,11 @@ và trạng thái Premium, được `provider` phát cho toàn app.
 - Logo (`assets/logo.svg`) đồng bộ với logo web, render bằng [`flutter_svg`](https://pub.dev/packages/flutter_svg).
 - Giới hạn Free/Premium được **enforce ở server**; app chỉ phản chiếu để UX rõ ràng
   (ẩn nút, hiện gợi ý nâng cấp).
+- **Icon ứng dụng** được tạo từ chính logo. Khi đổi logo, chạy lại:
+  ```bash
+  flutter test tool/generate_icons.dart   # SVG -> assets/icon/*.png (dùng engine Flutter)
+  dart run flutter_launcher_icons          # áp icon cho Android/iOS
+  ```
 
 ### Chưa có (so với web)
 
