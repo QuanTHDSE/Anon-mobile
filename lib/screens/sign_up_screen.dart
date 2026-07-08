@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/theme.dart';
+import '../services/google_auth.dart';
 import '../state/auth_state.dart';
+import '../widgets/google_button.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -18,6 +20,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _anonAlias = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
+  bool _googleLoading = false;
   String? _error;
   bool _done = false;
 
@@ -65,6 +68,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
       setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _googleSignIn() async {
+    setState(() {
+      _googleLoading = true;
+      _error = null;
+    });
+    try {
+      // Use the entered anon alias if any, else the backend/app picks a random
+      // ghost_xxxx — same as the web Register page.
+      await context
+          .read<AuthState>()
+          .loginWithGoogle(anonAlias: _anonAlias.text);
+      if (mounted) Navigator.of(context).pop();
+    } on GoogleSignInCancelled {
+      // User backed out — no error to show.
+    } catch (e) {
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _googleLoading = false);
     }
   }
 
@@ -171,6 +195,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Text('Tạo tài khoản'),
+                    ),
+                    const SizedBox(height: 20),
+                    // Divider "hoặc"
+                    Row(
+                      children: const [
+                        Expanded(child: Divider(color: AppColors.border)),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('hoặc',
+                              style: TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w600)),
+                        ),
+                        Expanded(child: Divider(color: AppColors.border)),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    GoogleButton(
+                      loading: _googleLoading,
+                      onPressed:
+                          (_loading || _googleLoading) ? null : _googleSignIn,
                     ),
                   ],
                 ),

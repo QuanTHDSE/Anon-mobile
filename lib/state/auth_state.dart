@@ -50,12 +50,14 @@ class AuthState extends ChangeNotifier {
   }
 
   /// Native Google Sign-In → exchange the ID token for an app session.
-  /// The backend generates the account on first login; we pass a random anon
-  /// alias like the web does (`ghost_xxxx`).
-  Future<void> loginWithGoogle() async {
+  /// The backend generates the account on first login; we pass the given anon
+  /// alias, or a random `ghost_xxxx` one (matching the web behaviour).
+  Future<void> loginWithGoogle({String? anonAlias}) async {
     final idToken = await GoogleAuth.instance.signInIdToken();
-    final suffix = Random().nextInt(1 << 20).toRadixString(36);
-    user = await AuthService.instance.loginWithGoogle(idToken, 'ghost_$suffix');
+    final alias = (anonAlias != null && anonAlias.trim().isNotEmpty)
+        ? anonAlias.trim()
+        : 'ghost_${Random().nextInt(1 << 20).toRadixString(36)}';
+    user = await AuthService.instance.loginWithGoogle(idToken, alias);
     notifyListeners();
     await refreshProfile();
   }
