@@ -34,7 +34,8 @@ flutter:
     - assets/icon/app_icon.png
     - assets/icon/app_icon_foreground.png
 
-# Launcher icon generated from assets/logo.svg. Regenerate the source PNGs with
+# Launcher icon: white background + the mask (assets/logo.svg), logo enlarged
+# to fill most of the frame. Regenerate the source PNGs with
 #   flutter test tool/generate_icons.dart
 # then apply them with
 #   dart run flutter_launcher_icons

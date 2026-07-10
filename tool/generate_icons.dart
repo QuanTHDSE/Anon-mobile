@@ -59,21 +59,22 @@ void main() {
       final info = await vg.loadPicture(SvgStringLoader(rawSvg), null);
       final logoSize = info.size;
 
-      // Full icon: white background, logo at ~60% of the canvas.
+      // Full icon (iOS + legacy Android): original white background, logo
+      // filling most of the frame like the reference artwork.
       await _render(
         logo: info.picture,
         logoSize: logoSize,
-        target: 620,
+        target: 880,
         background: Colors.white,
         path: 'assets/icon/app_icon.png',
       );
 
-      // Adaptive foreground: transparent, logo smaller so it stays inside the
-      // Android safe zone (central ~66%).
+      // Adaptive foreground: transparent, logo large but kept inside the
+      // Android safe zone so the horns aren't clipped on round/squircle masks.
       await _render(
         logo: info.picture,
         logoSize: logoSize,
-        target: 500,
+        target: 760,
         background: null,
         path: 'assets/icon/app_icon_foreground.png',
       );

@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.anon_mobile"
+    namespace = "site.anon_mobile"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
