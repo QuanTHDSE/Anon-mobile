@@ -1,4 +1,4 @@
-package com.example.anon_mobile
+package site.anon_mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

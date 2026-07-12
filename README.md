@@ -67,7 +67,7 @@ Nút Google chỉ hoạt động khi đã đăng ký OAuth client trong **cùng 
 với web client hiện tại (`268572852860-…`):
 
 - **Android** — tạo OAuth client loại *Android*:
-  - Package name: `com.example.anon_mobile` (xem `applicationId` trong
+  - Package name: `site.anon_mobile` (xem `applicationId` trong
     `android/app/build.gradle.kts` — đổi cho khớp nếu bạn đổi package).
   - SHA-1: lấy bằng `cd android && ./gradlew signingReport` (khai báo cả SHA-1
     debug lẫn release).
