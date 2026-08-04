@@ -6,6 +6,7 @@ import '../models/subscription.dart';
 import '../services/subscription_service.dart';
 import '../state/auth_state.dart';
 import 'checkout_screen.dart';
+import 'user_subscription_screen.dart';
 
 class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
@@ -71,7 +72,21 @@ class _PremiumScreenState extends State<PremiumScreen> {
   Widget build(BuildContext context) {
     final isPremium = context.watch<AuthState>().isPremium;
     return Scaffold(
-      appBar: AppBar(title: const Text('Premium')),
+      appBar: AppBar(
+        title: const Text('Premium'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.card_membership),
+            tooltip: 'Gói cước của tôi',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (_) => const UserSubscriptionScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         color: AppColors.brand,
         onRefresh: _load,

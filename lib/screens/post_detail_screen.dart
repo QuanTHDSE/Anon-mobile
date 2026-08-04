@@ -10,6 +10,7 @@ import '../services/post_service.dart';
 import '../state/auth_state.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/post_card.dart' show formatRelativeTime;
+import 'edit_post_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({super.key, required this.postId});
@@ -119,8 +120,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthState>();
+    final isAuthorOrAdmin = _post != null &&
+        (auth.user?.id == _post!.authorId || auth.user?.role == 'admin');
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Bài viết')),
+      appBar: AppBar(
+        title: const Text('Bài viết'),
+        actions: [
+          if (isAuthorOrAdmin)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Chỉnh sửa bài viết',
+              onPressed: () async {
+                final updated = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(
+                    builder: (_) => EditPostScreen(post: _post!),
+                  ),
+                );
+                if (updated == true) {
+                  _load();
+                }
+              },
+            ),
+        ],
+      ),
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(color: AppColors.brand))

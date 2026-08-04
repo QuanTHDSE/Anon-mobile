@@ -48,6 +48,26 @@ class UserService {
     await _api.patch('/api/v1/users/me/anon');
   }
 
+  Future<List<TopContributor>> getTopContributors({
+    int limit = 20,
+    int? month,
+    int? year,
+  }) async {
+    final query = <String, String>{
+      'limit': '$limit',
+      if (month != null) 'month': '$month',
+      if (year != null) 'year': '$year',
+    };
+    final qs = Uri(queryParameters: query).query;
+    final res = await _api.get('/api/v1/users/top-contributors?$qs');
+    if (res is! Map<String, dynamic>) return const [];
+    final list = (res['contributors'] ?? res['items'] ?? []) as List;
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map(TopContributor.fromJson)
+        .toList();
+  }
+
   // ── author info cache (avatars + premium), like the web app ──
   final Map<String, UserProfile?> _userCache = {};
 

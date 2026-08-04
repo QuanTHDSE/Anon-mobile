@@ -84,3 +84,46 @@ class UserProfile {
             json['isAnonDefault'] is bool ? json['isAnonDefault'] as bool : null,
       );
 }
+
+/// Top Contributor model from GET /api/v1/users/top-contributors.
+class TopContributor {
+  TopContributor({
+    required this.rank,
+    required this.userId,
+    required this.username,
+    required this.displayName,
+    this.avatarUrl,
+    required this.isAnonymous,
+    required this.postsCount,
+    required this.commentsCount,
+    required this.upvotesReceived,
+    required this.averageRating,
+    required this.contributionScore,
+  });
+
+  final int rank;
+  final String userId;
+  final String username;
+  final String displayName;
+  final String? avatarUrl;
+  final bool isAnonymous;
+  final int postsCount;
+  final int commentsCount;
+  final int upvotesReceived;
+  final double averageRating;
+  final int contributionScore;
+
+  factory TopContributor.fromJson(Map<String, dynamic> json) => TopContributor(
+        rank: (json['rank'] as num?)?.toInt() ?? 0,
+        userId: _str(json['userId']) ?? '',
+        username: _str(json['username']) ?? '',
+        displayName: _str(json['displayName']) ?? _str(json['username']) ?? 'User',
+        avatarUrl: _str(json['avatarUrl']),
+        isAnonymous: json['isAnonymous'] as bool? ?? false,
+        postsCount: (json['postsCount'] as num?)?.toInt() ?? 0,
+        commentsCount: (json['commentsCount'] as num?)?.toInt() ?? 0,
+        upvotesReceived: (json['upvotesReceived'] as num?)?.toInt() ?? 0,
+        averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
+        contributionScore: (json['contributionScore'] as num?)?.toInt() ?? 0,
+      );
+}

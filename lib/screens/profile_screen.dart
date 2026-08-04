@@ -15,9 +15,13 @@ import '../services/post_service.dart';
 import '../services/user_service.dart';
 import '../state/auth_state.dart';
 import '../widgets/author_avatar.dart';
+import 'edit_post_screen.dart';
 import 'following_screen.dart';
+import 'policy_screen.dart';
 import 'post_detail_screen.dart';
 import 'premium_screen.dart';
+import 'privacy_screen.dart';
+import 'user_subscription_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -236,9 +240,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            // Premium CTA
+            // My Subscription / Premium CTA
+            const SizedBox(height: 12),
             if (!auth.isPremium) ...[
-              const SizedBox(height: 12),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (_) => const PremiumScreen())),
@@ -266,7 +270,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
             ],
+            ListTile(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (_) => const UserSubscriptionScreen()),
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              tileColor: Colors.white,
+              leading: const Icon(Icons.card_membership, color: AppColors.brand),
+              title: const Text('Gói cước của tôi',
+                  style: TextStyle(fontWeight: FontWeight.w800)),
+              trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
+            ),
 
             const SizedBox(height: 20),
             const Text('Bài viết của tôi',
@@ -338,13 +356,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             style: const TextStyle(fontSize: 12)),
                       ],
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline,
-                          size: 20, color: AppColors.textMuted),
-                      onPressed: () => _deletePost(post),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined,
+                              size: 20, color: AppColors.textMuted),
+                          onPressed: () async {
+                            final updated =
+                                await Navigator.of(context).push<bool>(
+                              MaterialPageRoute(
+                                builder: (_) => EditPostScreen(post: post),
+                              ),
+                            );
+                            if (updated == true) _load();
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              size: 20, color: AppColors.textMuted),
+                          onPressed: () => _deletePost(post),
+                        ),
+                      ],
                     ),
                   ),
                 ),
+            const SizedBox(height: 20),
+            const Text('Thông tin & Pháp lý',
+                style:
+                    TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 8),
+            ListTile(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PolicyScreen()),
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              tileColor: Colors.white,
+              leading: const Icon(Icons.description_outlined,
+                  color: AppColors.brand),
+              title: const Text('Điều khoản dịch vụ',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+              trailing:
+                  const Icon(Icons.chevron_right, color: AppColors.textMuted),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PrivacyScreen()),
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              tileColor: Colors.white,
+              leading:
+                  const Icon(Icons.privacy_tip_outlined, color: AppColors.brand),
+              title: const Text('Chính sách bảo mật',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+              trailing:
+                  const Icon(Icons.chevron_right, color: AppColors.textMuted),
+            ),
             const SizedBox(height: 40),
           ],
         ),

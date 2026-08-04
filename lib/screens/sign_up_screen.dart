@@ -5,6 +5,7 @@ import '../core/theme.dart';
 import '../services/google_auth.dart';
 import '../state/auth_state.dart';
 import '../widgets/google_button.dart';
+import 'verify_email_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -119,6 +120,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                VerifyEmailScreen(email: _email.text.trim()),
+                          ),
+                        );
+                      },
+                      child: const Text('Nhập mã xác thực OTP'),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       child: const Text('Về đăng nhập'),
                     ),
