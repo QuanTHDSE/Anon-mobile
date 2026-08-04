@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/theme.dart';
 import '../models/post.dart';
 import '../services/bookmark_service.dart';
 import '../services/post_service.dart';
+import '../state/auth_state.dart';
 import 'author_avatar.dart';
 
 String formatRelativeTime(DateTime date) {
@@ -39,12 +41,20 @@ class _PostCardState extends State<PostCard> {
   bool _busyVote = false;
   bool _busyBookmark = false;
 
+  late double _avgRating = widget.post.averageRating;
+  late int _ratingsCount = widget.post.ratingsCount;
+  late int? _userRating = widget.post.userRating;
+  bool _busyRating = false;
+
   @override
   void didUpdateWidget(covariant PostCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isBookmarked != widget.isBookmarked) {
       _bookmarked = widget.isBookmarked;
     }
+    _avgRating = widget.post.averageRating;
+    _ratingsCount = widget.post.ratingsCount;
+    _userRating = widget.post.userRating;
   }
 
   Future<void> _toggleUpvote() async {
@@ -83,6 +93,150 @@ class _PostCardState extends State<PostCard> {
       setState(() => _bookmarked = !next);
     } finally {
       if (mounted) setState(() => _busyBookmark = false);
+    }
+  }
+
+  Future<void> _openRatingDialog() async {
+    final auth = context.read<AuthState>();
+    if (!auth.isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Vui lòng đăng nhập để đánh giá bài viết')),
+      );
+      return;
+    }
+
+    int selectedStars = _userRating ?? 5;
+
+    final result = await showDialog<int?>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: const Text(
+                'Đánh giá bài viết',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Chọn số sao bạn muốn dành cho bài viết này:',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      final star = index + 1;
+                      return IconButton(
+                        iconSize: 32,
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        icon: Icon(
+                          star <= selectedStars
+                              ? Icons.star_rounded
+                              : Icons.star_outline_rounded,
+                          color: Colors.amber,
+                        ),
+                        onPressed: () {
+                          setDialogState(() {
+                            selectedStars = star;
+                          });
+                        },
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '$selectedStars / 5 sao',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.brand,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                if (_userRating != null)
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(-1),
+                    style: TextButton.styleFrom(
+                        foregroundColor: AppColors.danger),
+                    child: const Text('Xóa đánh giá'),
+                  ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(null),
+                  child: const Text('Hủy'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(selectedStars),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.brand,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text('Gửi'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    setState(() => _busyRating = true);
+    try {
+      if (result == -1) {
+        final res =
+            await PostService.instance.deletePostRating(widget.post.id);
+        setState(() {
+          _userRating = null;
+          if (res['averageRating'] is num) {
+            _avgRating = (res['averageRating'] as num).toDouble();
+            widget.post.averageRating = _avgRating;
+          }
+          if (res['ratingsCount'] is num) {
+            _ratingsCount = (res['ratingsCount'] as num).toInt();
+            widget.post.ratingsCount = _ratingsCount;
+          }
+          widget.post.userRating = null;
+        });
+      } else {
+        final res = await PostService.instance
+            .ratePost(widget.post.id, result);
+        setState(() {
+          _userRating = result;
+          if (res['averageRating'] is num) {
+            _avgRating = (res['averageRating'] as num).toDouble();
+            widget.post.averageRating = _avgRating;
+          }
+          if (res['ratingsCount'] is num) {
+            _ratingsCount = (res['ratingsCount'] as num).toInt();
+            widget.post.ratingsCount = _ratingsCount;
+          }
+          widget.post.userRating = result;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi đánh giá: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busyRating = false);
     }
   }
 
@@ -263,6 +417,29 @@ class _PostCardState extends State<PostCard> {
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         color: AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _busyRating ? null : _openRatingDialog,
+                    icon: Icon(
+                      _userRating != null
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                      size: 18,
+                      color: Colors.amber,
+                    ),
+                    label: Text(
+                      _ratingsCount > 0
+                          ? '${_avgRating.toStringAsFixed(1)} ($_ratingsCount)'
+                          : (_userRating != null
+                              ? '$_userRating ★'
+                              : 'Đánh giá'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: _userRating != null
+                            ? AppColors.textPrimary
+                            : AppColors.textMuted,
                       ),
                     ),
                   ),

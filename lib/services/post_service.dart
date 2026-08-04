@@ -121,4 +121,22 @@ class PostService {
   Future<void> upvotePost(String id) async {
     await _api.post('/api/v1/posts/$id/upvote');
   }
+
+  Future<Map<String, dynamic>> ratePost(String id, int stars, {String? review}) async {
+    final res = await _api.post('/api/v1/posts/$id/rate', {
+      'stars': stars,
+      if (review != null && review.isNotEmpty) 'review': review,
+    });
+    return res is Map<String, dynamic> ? res : {};
+  }
+
+  Future<Map<String, dynamic>> deletePostRating(String id) async {
+    final res = await _api.delete('/api/v1/posts/$id/rate');
+    return res is Map<String, dynamic> ? res : {};
+  }
+
+  Future<Map<String, dynamic>> getPostRatings(String id) async {
+    final res = await _api.get('/api/v1/posts/$id/ratings');
+    return res is Map<String, dynamic> ? res : {};
+  }
 }

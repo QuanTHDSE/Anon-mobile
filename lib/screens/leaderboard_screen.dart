@@ -177,17 +177,67 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                         ],
                                       ),
                                     ),
-                                    Column(
-                                      children: [
-                                        const Icon(Icons.favorite,
-                                            size: 15,
-                                            color: Color(0xFFF43F5E)),
-                                        Text('${post.likesCount}',
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w800,
-                                                fontSize: 13)),
-                                      ],
-                                    ),
+                                     Row(
+                                       mainAxisSize: MainAxisSize.min,
+                                       children: [
+                                         Column(
+                                           mainAxisSize: MainAxisSize.min,
+                                           children: [
+                                             const Icon(Icons.favorite,
+                                                 size: 14,
+                                                 color: AppColors.danger),
+                                             const SizedBox(height: 2),
+                                             Text('${post.likesCount}',
+                                                 style: const TextStyle(
+                                                     fontWeight:
+                                                         FontWeight.w700,
+                                                     fontSize: 11,
+                                                     color: AppColors
+                                                         .textSecondary)),
+                                           ],
+                                         ),
+                                         const SizedBox(width: 8),
+                                         Column(
+                                           mainAxisSize: MainAxisSize.min,
+                                           children: [
+                                             const Icon(
+                                                 Icons.mode_comment_outlined,
+                                                 size: 14,
+                                                 color: AppColors.textMuted),
+                                             const SizedBox(height: 2),
+                                             Text('${post.commentsCount}',
+                                                 style: const TextStyle(
+                                                     fontWeight:
+                                                         FontWeight.w700,
+                                                     fontSize: 11,
+                                                     color: AppColors
+                                                         .textSecondary)),
+                                           ],
+                                         ),
+                                         const SizedBox(width: 8),
+                                         Column(
+                                           mainAxisSize: MainAxisSize.min,
+                                           children: [
+                                             const Icon(Icons.star_rounded,
+                                                 size: 15,
+                                                 color: Colors.amber),
+                                             const SizedBox(height: 2),
+                                             Text(
+                                               post.averageRating > 0
+                                                   ? post.averageRating
+                                                       .toStringAsFixed(1)
+                                                   : '0.0',
+                                               style: const TextStyle(
+                                                   fontWeight:
+                                                       FontWeight.w700,
+                                                   fontSize: 11,
+                                                   color: AppColors
+                                                       .textSecondary),
+                                             ),
+                                           ],
+                                         ),
+                                       ],
+                                     ),
                                   ],
                                 ),
                               ),

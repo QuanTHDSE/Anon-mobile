@@ -85,6 +85,9 @@ class FeedPost {
     required this.likesCount,
     this.hasUpvoted,
     required this.commentsCount,
+    this.averageRating = 0.0,
+    this.ratingsCount = 0,
+    this.userRating,
   });
 
   final String id;
@@ -101,6 +104,9 @@ class FeedPost {
   int likesCount;
   bool? hasUpvoted;
   int commentsCount;
+  double averageRating;
+  int ratingsCount;
+  int? userRating;
 
   factory FeedPost.fromJson(Map<String, dynamic> json) {
     final isAnon = json['isAnonymous'] == true;
@@ -138,6 +144,20 @@ class FeedPost {
     // avatar URL otherwise (may arrive as a raw key — absolutize).
     final avatar = toAbsoluteMediaUrl(_str(json['authorAvatarUrl']));
 
+    double avgRating = 0.0;
+    final rawAvg = json['averageRating'] ?? json['avgRating'] ?? json['rating'];
+    if (rawAvg is num) {
+      avgRating = rawAvg.toDouble();
+    }
+
+    final rCount = _int(json['ratingsCount'] ?? json['ratingCount'] ?? json['totalRatings']);
+
+    int? uRating;
+    final rawURating = json['userRating'] ?? json['myRating'] ?? json['myStars'];
+    if (rawURating is num) {
+      uRating = rawURating.toInt();
+    }
+
     return FeedPost(
       id: _str(json['id']) ?? '',
       title: _str(json['title']) ?? '',
@@ -169,6 +189,9 @@ class FeedPost {
       commentsCount: _int(json['commentsCount'] ??
           json['commentCount'] ??
           json['totalComments']),
+      averageRating: avgRating,
+      ratingsCount: rCount,
+      userRating: uRating,
     );
   }
 
