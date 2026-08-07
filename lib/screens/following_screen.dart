@@ -7,6 +7,7 @@ import '../services/follow_service.dart';
 import '../services/user_service.dart';
 import '../state/auth_state.dart';
 import '../widgets/author_avatar.dart';
+import '../widgets/premium_user_name.dart';
 import 'sign_in_screen.dart';
 
 class FollowingScreen extends StatefulWidget {
@@ -36,7 +37,11 @@ class _FollowingScreenState extends State<FollowingScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 3, vsync: this, initialIndex: widget.initialTab);
+    _tabs = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTab,
+    );
     _load();
   }
 
@@ -57,7 +62,9 @@ class _FollowingScreenState extends State<FollowingScreen>
     final userId = auth.user?.id ?? '';
 
     try {
-      final contributorsFuture = UserService.instance.getTopContributors(limit: 50);
+      final contributorsFuture = UserService.instance.getTopContributors(
+        limit: 50,
+      );
       final followingFuture = userId.isNotEmpty
           ? FollowService.instance.getFollowing(userId)
           : Future.value(<FollowUserItem>[]);
@@ -93,9 +100,9 @@ class _FollowingScreenState extends State<FollowingScreen>
   Future<void> _toggleFollow(String targetUserId) async {
     final auth = context.read<AuthState>();
     if (!auth.isLoggedIn) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const SignInScreen()),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const SignInScreen()));
       return;
     }
 
@@ -121,9 +128,9 @@ class _FollowingScreenState extends State<FollowingScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _actionUserId = null);
@@ -157,10 +164,7 @@ class _FollowingScreenState extends State<FollowingScreen>
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cộng đồng & Kết nối'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Cộng đồng & Kết nối'), elevation: 0),
       body: Column(
         children: [
           // Subtitle Header
@@ -191,9 +195,14 @@ class _FollowingScreenState extends State<FollowingScreen>
               unselectedLabelColor: AppColors.textMuted,
               indicatorColor: AppColors.brand,
               indicatorWeight: 3,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-              unselectedLabelStyle:
-                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
               tabs: [
                 Tab(
                   child: Row(
@@ -214,7 +223,11 @@ class _FollowingScreenState extends State<FollowingScreen>
                       Text('Đang theo dõi (${_following.length})'),
                       if (!isLoggedIn) ...[
                         const SizedBox(width: 4),
-                        const Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
+                        const Icon(
+                          Icons.lock_outline,
+                          size: 14,
+                          color: AppColors.textMuted,
+                        ),
                       ],
                     ],
                   ),
@@ -228,7 +241,11 @@ class _FollowingScreenState extends State<FollowingScreen>
                       Text('Người theo dõi (${_followers.length})'),
                       if (!isLoggedIn) ...[
                         const SizedBox(width: 4),
-                        const Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
+                        const Icon(
+                          Icons.lock_outline,
+                          size: 14,
+                          color: AppColors.textMuted,
+                        ),
                       ],
                     ],
                   ),
@@ -246,7 +263,11 @@ class _FollowingScreenState extends State<FollowingScreen>
               onChanged: (v) => setState(() => _searchQuery = v),
               decoration: InputDecoration(
                 hintText: 'Tìm theo tên contributor...',
-                prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.textMuted),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  size: 20,
+                  color: AppColors.textMuted,
+                ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear, size: 18),
@@ -256,8 +277,10 @@ class _FollowingScreenState extends State<FollowingScreen>
                         },
                       )
                     : null,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 fillColor: Colors.white,
                 filled: true,
               ),
@@ -277,7 +300,8 @@ class _FollowingScreenState extends State<FollowingScreen>
                           child: Text(
                             _error!,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(color: AppColors.textSecondary),
+                            style:
+                                const TextStyle(color: AppColors.textSecondary),
                           ),
                         ),
                       )
@@ -408,8 +432,10 @@ class _FollowingScreenState extends State<FollowingScreen>
                           Row(
                             children: [
                               Flexible(
-                                child: Text(
-                                  item.displayName,
+                                child: PremiumUserName(
+                                  userId: item.userId,
+                                  name: item.displayName,
+                                  isAnonymous: item.isAnonymous,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -421,7 +447,9 @@ class _FollowingScreenState extends State<FollowingScreen>
                               const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: rankBg,
                                   borderRadius: BorderRadius.circular(999),
@@ -442,7 +470,9 @@ class _FollowingScreenState extends State<FollowingScreen>
                             children: [
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.orange50,
                                   borderRadius: BorderRadius.circular(999),
@@ -460,8 +490,11 @@ class _FollowingScreenState extends State<FollowingScreen>
                                 const SizedBox(width: 6),
                                 Row(
                                   children: [
-                                    const Icon(Icons.star,
-                                        size: 14, color: AppColors.amber),
+                                    const Icon(
+                                      Icons.star,
+                                      size: 14,
+                                      color: AppColors.amber,
+                                    ),
                                     const SizedBox(width: 2),
                                     Text(
                                       item.averageRating.toStringAsFixed(1),
@@ -487,7 +520,9 @@ class _FollowingScreenState extends State<FollowingScreen>
                     Text(
                       '${item.postsCount} bài viết · ${item.upvotesReceived} upvotes',
                       style: const TextStyle(
-                          fontSize: 12, color: AppColors.textMuted),
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                     const Spacer(),
                     if (!isOwn)
@@ -501,9 +536,12 @@ class _FollowingScreenState extends State<FollowingScreen>
                               : Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 6),
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: isProcessing
                             ? null
@@ -513,7 +551,9 @@ class _FollowingScreenState extends State<FollowingScreen>
                                 width: 14,
                                 height: 14,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: AppColors.brand),
+                                  strokeWidth: 2,
+                                  color: AppColors.brand,
+                                ),
                               )
                             : Icon(
                                 isFollowing
@@ -524,7 +564,9 @@ class _FollowingScreenState extends State<FollowingScreen>
                         label: Text(
                           isFollowing ? 'Hủy' : 'Theo dõi',
                           style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w800),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                   ],
@@ -570,25 +612,37 @@ class _FollowingScreenState extends State<FollowingScreen>
             ),
             child: ListTile(
               leading: AuthorAvatar(
-                  imageUrl: user.avatarUrl, name: user.username, size: 44),
-              title: Text(user.username,
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: Text(user.email,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12)),
+                imageUrl: user.avatarUrl,
+                name: user.username,
+                size: 44,
+              ),
+              title: PremiumUserName(
+                userId: user.id,
+                name: user.username,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              subtitle: Text(
+                user.email,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
+              ),
               trailing: TextButton.icon(
-                onPressed:
-                    isProcessing ? null : () => _toggleFollow(user.id),
+                onPressed: isProcessing ? null : () => _toggleFollow(user.id),
                 icon: isProcessing
                     ? const SizedBox(
                         width: 14,
                         height: 14,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: AppColors.danger),
+                          strokeWidth: 2,
+                          color: AppColors.danger,
+                        ),
                       )
-                    : const Icon(Icons.person_remove_outlined,
-                        size: 16, color: AppColors.danger),
+                    : const Icon(
+                        Icons.person_remove_outlined,
+                        size: 16,
+                        color: AppColors.danger,
+                      ),
                 label: const Text(
                   'Hủy theo dõi',
                   style: TextStyle(
@@ -638,40 +692,45 @@ class _FollowingScreenState extends State<FollowingScreen>
             ),
             child: ListTile(
               leading: AuthorAvatar(
-                  imageUrl: user.avatarUrl, name: user.username, size: 44),
-              title: Text(user.username,
-                  style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: Text(user.email,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12)),
+                imageUrl: user.avatarUrl,
+                name: user.username,
+                size: 44,
+              ),
+              title: PremiumUserName(
+                userId: user.id,
+                name: user.username,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              subtitle: Text(
+                user.email,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
+              ),
               trailing: TextButton.icon(
-                onPressed:
-                    isProcessing ? null : () => _toggleFollow(user.id),
+                onPressed: isProcessing ? null : () => _toggleFollow(user.id),
                 icon: isProcessing
                     ? const SizedBox(
                         width: 14,
                         height: 14,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: AppColors.brand),
+                          strokeWidth: 2,
+                          color: AppColors.brand,
+                        ),
                       )
                     : Icon(
                         isFollowing
                             ? Icons.person_remove_outlined
                             : Icons.person_add_outlined,
                         size: 16,
-                        color: isFollowing
-                            ? AppColors.danger
-                            : AppColors.brand,
+                        color: isFollowing ? AppColors.danger : AppColors.brand,
                       ),
                 label: Text(
                   isFollowing ? 'Hủy' : 'Theo dõi',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: isFollowing
-                        ? AppColors.danger
-                        : AppColors.brand,
+                    color: isFollowing ? AppColors.danger : AppColors.brand,
                   ),
                 ),
               ),
@@ -701,8 +760,11 @@ class _FollowingScreenState extends State<FollowingScreen>
                 color: AppColors.orange50,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.lock_outline,
-                  size: 36, color: AppColors.brand),
+              child: const Icon(
+                Icons.lock_outline,
+                size: 36,
+                color: AppColors.brand,
+              ),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -717,9 +779,9 @@ class _FollowingScreenState extends State<FollowingScreen>
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SignInScreen()),
-              ),
+              onPressed: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const SignInScreen())),
               child: const Text('Đăng nhập ngay'),
             ),
           ],
@@ -742,9 +804,10 @@ class _FollowingScreenState extends State<FollowingScreen>
           Text(
             message,
             style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textMuted),
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textMuted,
+            ),
           ),
           if (subMessage != null) ...[
             const SizedBox(height: 4),

@@ -11,6 +11,7 @@ import '../services/search_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/post_card.dart';
+import '../widgets/premium_user_name.dart';
 import 'following_screen.dart';
 import 'post_detail_screen.dart';
 import 'user_profile_screen.dart';
@@ -55,8 +56,7 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void _onScroll() {
-    if (_scroll.position.pixels >
-            _scroll.position.maxScrollExtent - 400 &&
+    if (_scroll.position.pixels > _scroll.position.maxScrollExtent - 400 &&
         !_loadingMore &&
         !_loading &&
         _search.isEmpty &&
@@ -154,8 +154,11 @@ class _FeedScreenState extends State<FeedScreen> {
     if (_search.isNotEmpty || _loadingMore) return;
     setState(() => _loadingMore = true);
     try {
-      final res = await PostService.instance
-          .getPosts(search: '', page: _page + 1, pageSize: 10);
+      final res = await PostService.instance.getPosts(
+        search: '',
+        page: _page + 1,
+        pageSize: 10,
+      );
       if (mounted) {
         setState(() {
           _page += 1;
@@ -170,8 +173,9 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void _openDetail(FeedPost post) {
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => PostDetailScreen(postId: post.id)));
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => PostDetailScreen(postId: post.id)),
+    );
   }
 
   void _openUserProfile(String userId) {
@@ -297,7 +301,9 @@ class _FeedScreenState extends State<FeedScreen> {
                           onTap: _clearSearch,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF3F4F6),
                               borderRadius: BorderRadius.circular(999),
@@ -313,7 +319,11 @@ class _FeedScreenState extends State<FeedScreen> {
                                     color: AppColors.textSecondary,
                                   ),
                                 ),
-                                Icon(Icons.close, size: 12, color: AppColors.textMuted),
+                                Icon(
+                                  Icons.close,
+                                  size: 12,
+                                  color: AppColors.textMuted,
+                                ),
                               ],
                             ),
                           ),
@@ -323,7 +333,10 @@ class _FeedScreenState extends State<FeedScreen> {
                     const SizedBox(height: 2),
                     Text(
                       'Tìm thấy ${_posts.length} bài viết và ${_searchUsers.length} tác giả',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ],
                 ),
@@ -337,7 +350,10 @@ class _FeedScreenState extends State<FeedScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildFilterChip('all', 'Tất cả (${_posts.length + _searchUsers.length})'),
+                _buildFilterChip(
+                  'all',
+                  'Tất cả (${_posts.length + _searchUsers.length})',
+                ),
                 const SizedBox(width: 6),
                 _buildFilterChip('posts', 'Bài viết (${_posts.length})'),
                 const SizedBox(width: 6),
@@ -348,10 +364,15 @@ class _FeedScreenState extends State<FeedScreen> {
           const SizedBox(height: 16),
 
           // Section 1: Matching Users / Authors
-          if ((_searchTab == 'all' || _searchTab == 'users') && _searchUsers.isNotEmpty) ...[
+          if ((_searchTab == 'all' || _searchTab == 'users') &&
+              _searchUsers.isNotEmpty) ...[
             Row(
               children: [
-                const Icon(Icons.people_outline, size: 16, color: AppColors.brand),
+                const Icon(
+                  Icons.people_outline,
+                  size: 16,
+                  color: AppColors.brand,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   'TÁC GIẢ / NGƯỜI DÙNG (${_searchUsers.length})',
@@ -387,15 +408,23 @@ class _FeedScreenState extends State<FeedScreen> {
                     name: u.username,
                     size: 44,
                   ),
-                  title: Text(
-                    u.username,
+                  title: PremiumUserName(
+                    userId: u.id,
+                    name: u.username,
+                    isPremium: u.hasActiveSubscription,
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                   subtitle: Text(
                     '@${u.anonAlias.isNotEmpty ? u.anonAlias : u.username} · ${u.followerCount} người theo dõi',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
                   ),
-                  trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
             const SizedBox(height: 16),
@@ -429,7 +458,9 @@ class _FeedScreenState extends State<FeedScreen> {
         if (_search.isNotEmpty &&
             ((_searchTab == 'posts' && _posts.isEmpty) ||
                 (_searchTab == 'users' && _searchUsers.isEmpty) ||
-                (_searchTab == 'all' && _posts.isEmpty && _searchUsers.isEmpty)))
+                (_searchTab == 'all' &&
+                    _posts.isEmpty &&
+                    _searchUsers.isEmpty)))
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 40),
             child: Center(
@@ -449,7 +480,9 @@ class _FeedScreenState extends State<FeedScreen> {
               ),
             ),
           )
-        else if (_search.isEmpty || _searchTab == 'all' || _searchTab == 'posts')
+        else if (_search.isEmpty ||
+            _searchTab == 'all' ||
+            _searchTab == 'posts')
           for (final post in _posts)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -487,9 +520,7 @@ class _FeedScreenState extends State<FeedScreen> {
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: active ? AppColors.brand : AppColors.border,
-        ),
+        side: BorderSide(color: active ? AppColors.brand : AppColors.border),
       ),
     );
   }

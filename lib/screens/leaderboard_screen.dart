@@ -4,6 +4,7 @@ import '../core/theme.dart';
 import '../models/post.dart';
 import '../services/post_service.dart';
 import '../widgets/author_avatar.dart';
+import '../widgets/premium_user_name.dart';
 import 'post_detail_screen.dart';
 
 /// Top posts (GET /api/v1/posts/top) — port of the web LeaderboardPage.
@@ -31,8 +32,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       _error = null;
     });
     try {
-      final posts = await PostService.instance
-          .getTopPosts(range: '30d', sort: 'hot', pageSize: 30);
+      final posts = await PostService.instance.getTopPosts(
+        range: '30d',
+        sort: 'hot',
+        pageSize: 30,
+      );
       setState(() => _posts = posts);
     } catch (e) {
       setState(() => _error = e.toString());
@@ -57,26 +61,39 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         onRefresh: _load,
         child: _loading
             ? const Center(
-                child: CircularProgressIndicator(color: AppColors.brand))
+                child: CircularProgressIndicator(color: AppColors.brand),
+              )
             : _error != null
-                ? ListView(children: [
-                    const SizedBox(height: 120),
-                    Center(
-                        child: Text(_error!,
-                            style: const TextStyle(
-                                color: AppColors.textSecondary))),
-                  ])
+                ? ListView(
+                    children: [
+                      const SizedBox(height: 120),
+                      Center(
+                        child: Text(
+                          _error!,
+                          style:
+                              const TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ),
+                    ],
+                  )
                 : _posts.isEmpty
-                    ? ListView(children: const [
-                        SizedBox(height: 120),
-                        Icon(Icons.emoji_events_outlined,
-                            size: 40, color: AppColors.textMuted),
-                        SizedBox(height: 12),
-                        Center(
-                            child: Text('Chưa có dữ liệu xếp hạng.',
-                                style: TextStyle(
-                                    color: AppColors.textSecondary))),
-                      ])
+                    ? ListView(
+                        children: const [
+                          SizedBox(height: 120),
+                          Icon(
+                            Icons.emoji_events_outlined,
+                            size: 40,
+                            color: AppColors.textMuted,
+                          ),
+                          SizedBox(height: 12),
+                          Center(
+                            child: Text(
+                              'Chưa có dữ liệu xếp hạng.',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          ),
+                        ],
+                      )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
                         itemCount: _posts.length,
@@ -94,8 +111,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               borderRadius: BorderRadius.circular(20),
                               onTap: () => Navigator.of(context).push(
                                 MaterialPageRoute(
-                                    builder: (_) => PostDetailScreen(
-                                        postId: post.id)),
+                                  builder: (_) =>
+                                      PostDetailScreen(postId: post.id),
+                                ),
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(12),
@@ -104,8 +122,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                     SizedBox(
                                       width: 36,
                                       child: rank <= 3
-                                          ? Icon(Icons.emoji_events,
-                                              color: _rankColor(rank))
+                                          ? Icon(
+                                              Icons.emoji_events,
+                                              color: _rankColor(rank),
+                                            )
                                           : Text(
                                               '#$rank',
                                               textAlign: TextAlign.center,
@@ -117,8 +137,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                     ),
                                     if (post.images.isNotEmpty)
                                       Padding(
-                                        padding: const EdgeInsets.only(
-                                            right: 10),
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
                                         child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(12),
@@ -129,10 +149,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                             fit: BoxFit.cover,
                                             errorBuilder: (_, __, ___) =>
                                                 Container(
-                                                    width: 56,
-                                                    height: 56,
-                                                    color: const Color(
-                                                        0xFFF3F4F6)),
+                                              width: 56,
+                                              height: 56,
+                                              color: const Color(0xFFF3F4F6),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -141,35 +161,37 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(post.title,
-                                              maxLines: 2,
-                                              overflow:
-                                                  TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  fontWeight:
-                                                      FontWeight.w800)),
+                                          Text(
+                                            post.title,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
                                           const SizedBox(height: 4),
                                           Row(
                                             children: [
                                               AuthorAvatar(
-                                                imageUrl:
-                                                    post.author.avatar,
+                                                imageUrl: post.author.avatar,
                                                 name: post.author.name,
-                                                isAnonymous:
-                                                    post.isAnonymous,
+                                                isAnonymous: post.isAnonymous,
                                                 size: 16,
                                               ),
                                               const SizedBox(width: 5),
                                               Flexible(
-                                                child: Text(
-                                                  post.author.name,
+                                                child: PremiumUserName(
+                                                  userId: post.author.id,
+                                                  name: post.author.name,
+                                                  isAnonymous: post.isAnonymous,
                                                   maxLines: 1,
-                                                  overflow: TextOverflow
-                                                      .ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: AppColors
-                                                          .textSecondary),
+                                                    fontSize: 12,
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
                                                 ),
                                               ),
                                             ],
@@ -177,67 +199,75 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                         ],
                                       ),
                                     ),
-                                     Row(
-                                       mainAxisSize: MainAxisSize.min,
-                                       children: [
-                                         Column(
-                                           mainAxisSize: MainAxisSize.min,
-                                           children: [
-                                             const Icon(Icons.favorite,
-                                                 size: 14,
-                                                 color: AppColors.danger),
-                                             const SizedBox(height: 2),
-                                             Text('${post.likesCount}',
-                                                 style: const TextStyle(
-                                                     fontWeight:
-                                                         FontWeight.w700,
-                                                     fontSize: 11,
-                                                     color: AppColors
-                                                         .textSecondary)),
-                                           ],
-                                         ),
-                                         const SizedBox(width: 8),
-                                         Column(
-                                           mainAxisSize: MainAxisSize.min,
-                                           children: [
-                                             const Icon(
-                                                 Icons.mode_comment_outlined,
-                                                 size: 14,
-                                                 color: AppColors.textMuted),
-                                             const SizedBox(height: 2),
-                                             Text('${post.commentsCount}',
-                                                 style: const TextStyle(
-                                                     fontWeight:
-                                                         FontWeight.w700,
-                                                     fontSize: 11,
-                                                     color: AppColors
-                                                         .textSecondary)),
-                                           ],
-                                         ),
-                                         const SizedBox(width: 8),
-                                         Column(
-                                           mainAxisSize: MainAxisSize.min,
-                                           children: [
-                                             const Icon(Icons.star_rounded,
-                                                 size: 15,
-                                                 color: Colors.amber),
-                                             const SizedBox(height: 2),
-                                             Text(
-                                               post.averageRating > 0
-                                                   ? post.averageRating
-                                                       .toStringAsFixed(1)
-                                                   : '0.0',
-                                               style: const TextStyle(
-                                                   fontWeight:
-                                                       FontWeight.w700,
-                                                   fontSize: 11,
-                                                   color: AppColors
-                                                       .textSecondary),
-                                             ),
-                                           ],
-                                         ),
-                                       ],
-                                     ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.favorite,
+                                              size: 14,
+                                              color: AppColors.danger,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '${post.likesCount}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 11,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.mode_comment_outlined,
+                                              size: 14,
+                                              color: AppColors.textMuted,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '${post.commentsCount}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 11,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              Icons.star_rounded,
+                                              size: 15,
+                                              color: Colors.amber,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              post.averageRating > 0
+                                                  ? post.averageRating
+                                                      .toStringAsFixed(
+                                                      1,
+                                                    )
+                                                  : '0.0',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 11,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),

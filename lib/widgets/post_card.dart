@@ -7,6 +7,7 @@ import '../services/bookmark_service.dart';
 import '../services/post_service.dart';
 import '../state/auth_state.dart';
 import 'author_avatar.dart';
+import 'premium_user_name.dart';
 
 String formatRelativeTime(DateTime date) {
   final diff = DateTime.now().difference(date);
@@ -271,8 +272,10 @@ class _PostCardState extends State<PostCard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          post.author.name,
+                        PremiumUserName(
+                          userId: post.author.id,
+                          name: post.author.name,
+                          isAnonymous: post.isAnonymous,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -333,7 +336,7 @@ class _PostCardState extends State<PostCard> {
                     child: Image.network(
                       post.images.first,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         color: const Color(0xFFF3F4F6),
                         child: const Icon(Icons.broken_image_outlined,
                             color: AppColors.textMuted),

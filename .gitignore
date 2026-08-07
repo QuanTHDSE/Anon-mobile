@@ -49,3 +49,11 @@ android/key.properties
 android/app/keystores/
 *.jks
 *.keystore
+
+# AI assistant docs
+.gitnexus/
+AGENTS.md
+CLAUDE.md
+SKILL.md
+
+

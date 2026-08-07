@@ -7,6 +7,7 @@ import '../services/follow_service.dart';
 import '../services/post_service.dart';
 import '../services/user_service.dart';
 import '../widgets/author_avatar.dart';
+import '../widgets/premium_user_name.dart';
 import 'post_detail_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -55,7 +56,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           _profile = profile;
           _stats = stats;
           _isFollowing = stats.isFollowing;
-          _posts = postsResult.posts.where((p) => p.authorId == widget.userId).toList();
+          _posts = postsResult.posts
+              .where((p) => p.authorId == widget.userId)
+              .toList();
         });
       }
     } catch (e) {
@@ -81,9 +84,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       if (mounted) setState(() => _stats = newStats);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _busyFollow = false);
@@ -93,9 +96,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_profile?.username ?? 'Hồ sơ người dùng'),
-      ),
+      appBar: AppBar(title: Text(_profile?.username ?? 'Hồ sơ người dùng')),
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(color: AppColors.brand),
@@ -104,7 +105,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Text(_error!, style: const TextStyle(color: AppColors.textSecondary)),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
                   ),
                 )
               : RefreshIndicator(
@@ -126,25 +130,36 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  _profile?.username ?? 'Người dùng',
+                                PremiumUserName(
+                                  userId: widget.userId,
+                                  name: _profile?.username ?? 'Người dùng',
+                                  isPremium: _profile?.isPremium == true
+                                      ? true
+                                      : null,
                                   style: const TextStyle(
-                                      fontSize: 20, fontWeight: FontWeight.w900),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
                                   '@${_profile?.anonAlias ?? _profile?.username}',
                                   style: const TextStyle(
-                                      fontSize: 13, color: AppColors.textMuted),
+                                    fontSize: 13,
+                                    color: AppColors.textMuted,
+                                  ),
                                 ),
-                                if (_profile?.bio != null && _profile!.bio!.isNotEmpty) ...[
+                                if (_profile?.bio != null &&
+                                    _profile!.bio!.isNotEmpty) ...[
                                   const SizedBox(height: 6),
                                   Text(
                                     _profile!.bio!,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                        fontSize: 13, color: AppColors.textSecondary),
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                 ],
                               ],
@@ -175,15 +190,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 width: 16,
                                 height: 16,
                                 child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: AppColors.brand),
+                                  strokeWidth: 2,
+                                  color: AppColors.brand,
+                                ),
                               )
-                            : Icon(_isFollowing
-                                ? Icons.person_remove_outlined
-                                : Icons.person_add_outlined),
+                            : Icon(
+                                _isFollowing
+                                    ? Icons.person_remove_outlined
+                                    : Icons.person_add_outlined,
+                              ),
                         label: Text(
                           _isFollowing ? 'Đang theo dõi' : 'Theo dõi',
                           style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w800),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -200,12 +221,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             _buildStatItem('Bài viết', '${_posts.length}'),
-                            Container(width: 1, height: 28, color: AppColors.border),
+                            Container(
+                              width: 1,
+                              height: 28,
+                              color: AppColors.border,
+                            ),
                             _buildStatItem(
-                                'Người theo dõi', '${_stats?.followerCount ?? 0}'),
-                            Container(width: 1, height: 28, color: AppColors.border),
+                              'Người theo dõi',
+                              '${_stats?.followerCount ?? 0}',
+                            ),
+                            Container(
+                              width: 1,
+                              height: 28,
+                              color: AppColors.border,
+                            ),
                             _buildStatItem(
-                                'Đang theo dõi', '${_stats?.followingCount ?? 0}'),
+                              'Đang theo dõi',
+                              '${_stats?.followingCount ?? 0}',
+                            ),
                           ],
                         ),
                       ),
@@ -214,7 +247,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       // Posts Section
                       const Text(
                         'Bài viết đã đăng',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w800),
                       ),
                       const SizedBox(height: 10),
 
@@ -240,20 +274,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                             child: ListTile(
                               onTap: () => Navigator.of(context).push(
                                 MaterialPageRoute(
-                                    builder: (_) => PostDetailScreen(postId: post.id)),
+                                  builder: (_) =>
+                                      PostDetailScreen(postId: post.id),
+                                ),
                               ),
                               title: Text(
                                 post.title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w700),
                               ),
                               subtitle: Text(
                                 '${post.likesCount} ♥ · ${post.commentsCount} 💬',
                                 style: const TextStyle(fontSize: 12),
                               ),
-                              trailing: const Icon(Icons.chevron_right,
-                                  color: AppColors.textMuted),
+                              trailing: const Icon(
+                                Icons.chevron_right,
+                                color: AppColors.textMuted,
+                              ),
                             ),
                           ),
                     ],
@@ -265,9 +304,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Widget _buildStatItem(String label, String value) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+        ),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+        ),
       ],
     );
   }

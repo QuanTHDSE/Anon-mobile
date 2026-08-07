@@ -10,6 +10,7 @@ import '../services/post_service.dart';
 import '../state/auth_state.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/post_card.dart' show formatRelativeTime;
+import '../widgets/premium_user_name.dart';
 import 'edit_post_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -75,8 +76,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         _comments = comments.comments;
         _upvoted = post.hasUpvoted ?? false;
         _likes = post.likesCount;
-        _avgRating =
-            (ratingsRes['averageRating'] as num?)?.toDouble() ?? post.averageRating;
+        _avgRating = (ratingsRes['averageRating'] as num?)?.toDouble() ??
+            post.averageRating;
         _ratingsCount =
             (ratingsRes['ratingsCount'] as num?)?.toInt() ?? post.ratingsCount;
         _userRating =
@@ -94,7 +95,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (!auth.isLoggedIn) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Vui lòng đăng nhập để đánh giá bài viết')),
+          content: Text('Vui lòng đăng nhập để đánh giá bài viết'),
+        ),
       );
       return;
     }
@@ -122,7 +124,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     'Chọn số sao bạn muốn dành cho bài viết này:',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 13, color: AppColors.textSecondary),
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -163,7 +167,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     onPressed: () =>
                         Navigator.of(context).pop(-1), // -1 means delete
                     style: TextButton.styleFrom(
-                        foregroundColor: AppColors.danger),
+                      foregroundColor: AppColors.danger,
+                    ),
                     child: const Text('Xóa đánh giá'),
                   ),
                 TextButton(
@@ -217,9 +222,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi khi đánh giá: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi khi đánh giá: $e')));
       }
     } finally {
       if (mounted) setState(() => _busyRating = false);
@@ -258,13 +263,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       );
       _commentCtrl.clear();
       setState(() => _replyTo = null);
-      final refreshed =
-          await CommentService.instance.getComments(widget.postId);
+      final refreshed = await CommentService.instance.getComments(
+        widget.postId,
+      );
       setState(() => _comments = refreshed.comments);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -300,15 +307,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: AppColors.brand))
+              child: CircularProgressIndicator(color: AppColors.brand),
+            )
           : _error != null
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Text(_error!,
-                        textAlign: TextAlign.center,
-                        style:
-                            const TextStyle(color: AppColors.textSecondary)),
+                    child: Text(
+                      _error!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
                   ),
                 )
               : Column(
@@ -322,8 +331,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Widget _buildContent() {
     final post = _post!;
-    final dateStr =
-        DateFormat('dd MMMM yyyy, HH:mm', 'vi').format(post.createdAt.toLocal());
+    final dateStr = DateFormat(
+      'dd MMMM yyyy, HH:mm',
+      'vi',
+    ).format(post.createdAt.toLocal());
     return RefreshIndicator(
       color: AppColors.brand,
       onRefresh: _load,
@@ -344,19 +355,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(post.author.name,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w800, fontSize: 15)),
-                    Text(dateStr,
-                        style: const TextStyle(
-                            fontSize: 12, color: AppColors.textMuted)),
+                    PremiumUserName(
+                      userId: post.author.id,
+                      name: post.author.name,
+                      isAnonymous: post.isAnonymous,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      dateStr,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                   ],
                 ),
               ),
               if (post.subject != null)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.orange50,
                     borderRadius: BorderRadius.circular(999),
@@ -364,34 +387,46 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   child: Text(
                     post.subject!.name,
                     style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.brand),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.brand,
+                    ),
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 16),
-          Text(post.title,
-              style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary)),
+          Text(
+            post.title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(post.content,
-              style: const TextStyle(
-                  fontSize: 15,
-                  height: 1.5,
-                  color: AppColors.textSecondary)),
+          Text(
+            post.content,
+            style: const TextStyle(
+              fontSize: 15,
+              height: 1.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
           if (post.tags.isNotEmpty) ...[
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               children: post.tags
-                  .map((t) => Text('#$t',
+                  .map(
+                    (t) => Text(
+                      '#$t',
                       style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.brand)))
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.brand,
+                      ),
+                    ),
+                  )
                   .toList(),
             ),
           ],
@@ -400,14 +435,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             const SizedBox(height: 12),
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Image.network(img,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                        height: 160,
-                        color: const Color(0xFFF3F4F6),
-                        child: const Icon(Icons.broken_image_outlined,
-                            color: AppColors.textMuted),
-                      )),
+              child: Image.network(
+                img,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 160,
+                  color: const Color(0xFFF3F4F6),
+                  child: const Icon(
+                    Icons.broken_image_outlined,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ),
             ),
           ],
           // File attachments
@@ -422,15 +461,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.description_outlined,
-                      size: 20, color: AppColors.textMuted),
+                  const Icon(
+                    Icons.description_outlined,
+                    size: 20,
+                    color: AppColors.textMuted,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(m.fileName ?? 'Tệp đính kèm',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style:
-                            const TextStyle(fontWeight: FontWeight.w600)),
+                    child: Text(
+                      m.fileName ?? 'Tệp đính kèm',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ],
               ),
@@ -446,23 +489,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   size: 20,
                   color: _upvoted ? AppColors.danger : AppColors.textMuted,
                 ),
-                label: Text('$_likes',
-                    style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: _upvoted
-                            ? AppColors.danger
-                            : AppColors.textMuted)),
+                label: Text(
+                  '$_likes',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: _upvoted ? AppColors.danger : AppColors.textMuted,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               Row(
                 children: [
-                  const Icon(Icons.mode_comment_outlined,
-                      size: 18, color: AppColors.textMuted),
+                  const Icon(
+                    Icons.mode_comment_outlined,
+                    size: 18,
+                    color: AppColors.textMuted,
+                  ),
                   const SizedBox(width: 4),
-                  Text('${_comments.length}',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textMuted)),
+                  Text(
+                    '${_comments.length}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(width: 8),
@@ -490,22 +540,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ],
           ),
           const Divider(height: 24),
-          const Text('Bình luận',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+          const Text(
+            'Bình luận',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 8),
           if (_comments.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
-                child: Text('Chưa có bình luận nào. Hãy là người đầu tiên!',
-                    style: TextStyle(color: AppColors.textMuted)),
+                child: Text(
+                  'Chưa có bình luận nào. Hãy là người đầu tiên!',
+                  style: TextStyle(color: AppColors.textMuted),
+                ),
               ),
             ),
-          for (final c in _comments) _CommentTile(
-            comment: c,
-            onReply: (c) => setState(() => _replyTo = c),
-            onChanged: _load,
-          ),
+          for (final c in _comments)
+            _CommentTile(
+              comment: c,
+              onReply: (c) => setState(() => _replyTo = c),
+              onChanged: _load,
+            ),
           const SizedBox(height: 12),
         ],
       ),
@@ -535,9 +590,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.brand),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.brand,
+                      ),
                     ),
                   ),
                   IconButton(
@@ -552,8 +608,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 Tooltip(
                   message: 'Bình luận ẩn danh',
                   child: GestureDetector(
-                    onTap: () => setState(
-                        () => _commentAnonymous = !_commentAnonymous),
+                    onTap: () =>
+                        setState(() => _commentAnonymous = !_commentAnonymous),
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -580,8 +636,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     maxLines: 3,
                     decoration: const InputDecoration(
                       hintText: 'Viết bình luận...',
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                     ),
                   ),
                 ),
@@ -593,7 +651,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.brand))
+                            strokeWidth: 2,
+                            color: AppColors.brand,
+                          ),
+                        )
                       : const Icon(Icons.send, color: AppColors.brand),
                 ),
               ],
@@ -644,9 +705,11 @@ class _CommentTile extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        comment.author?.name ??
+                      child: PremiumUserName(
+                        userId: comment.author?.id ?? '',
+                        name: comment.author?.name ??
                             (comment.isAnonymous ? 'Ẩn danh' : 'Người dùng'),
+                        isAnonymous: comment.isAnonymous,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -661,45 +724,60 @@ class _CommentTile extends StatelessWidget {
                     Text(
                       formatRelativeTime(comment.createdAt),
                       style: const TextStyle(
-                          fontSize: 11, color: AppColors.textMuted),
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(comment.content,
-                    style: const TextStyle(
-                        fontSize: 14, color: AppColors.textPrimary)),
+                Text(
+                  comment.content,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 Row(
                   children: [
                     if (depth == 0)
                       TextButton(
                         onPressed: () => onReply(comment),
                         style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(40, 28)),
-                        child: const Text('Trả lời',
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textMuted)),
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(40, 28),
+                        ),
+                        child: const Text(
+                          'Trả lời',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
                       ),
                     if (isOwner)
                       TextButton(
                         onPressed: () async {
                           try {
-                            await CommentService.instance
-                                .deleteComment(comment.id);
+                            await CommentService.instance.deleteComment(
+                              comment.id,
+                            );
                             await onChanged();
                           } catch (_) {}
                         },
                         style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(40, 28)),
-                        child: const Text('Xóa',
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.danger)),
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(40, 28),
+                        ),
+                        child: const Text(
+                          'Xóa',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.danger,
+                          ),
+                        ),
                       ),
                   ],
                 ),

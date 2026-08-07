@@ -2,6 +2,8 @@ import 'package:http/http.dart' as http;
 
 import '../core/api_client.dart';
 import '../models/user.dart';
+import 'search_service.dart';
+import 'subscription_service.dart';
 
 /// Port of src/services/userService.ts.
 class UserService {
@@ -70,6 +72,11 @@ class UserService {
 
   // ── author info cache (avatars + premium), like the web app ──
   final Map<String, UserProfile?> _userCache = {};
+  final Map<String, bool> _premiumCache = {};
+  final Map<String, DateTime> _premiumCacheTime = {};
+  final Map<String, Future<bool>> _premiumInflight = {};
+
+  static const Duration _premiumCacheTtl = Duration(minutes: 5);
 
   Future<UserProfile?> fetchUserCached(String id) async {
     if (id.isEmpty) return null;
@@ -82,5 +89,67 @@ class UserService {
       _userCache[id] = null;
       return null;
     }
+  }
+
+  /// Resolves public Premium status from the user profile first, then falls
+  /// back to active subscriptions. Results are cached briefly because author
+  /// names can occur many times across feeds, comments and community lists.
+  Future<bool> getUserPremium(String id, {String? username}) {
+    if (id.isEmpty) return Future.value(false);
+
+    final cachedAt = _premiumCacheTime[id];
+    if (cachedAt != null &&
+        DateTime.now().difference(cachedAt) < _premiumCacheTtl) {
+      return Future.value(_premiumCache[id] ?? false);
+    }
+
+    final inFlight = _premiumInflight[id];
+    if (inFlight != null) return inFlight;
+
+    final request = () async {
+      var profile = _userCache[id];
+      var publicStatusResolved = false;
+      var isPremium = profile?.isPremium == true;
+      var searchName = username?.trim() ?? '';
+
+      if (!isPremium && searchName.isEmpty) {
+        profile = await fetchUserCached(id);
+        isPremium = profile?.isPremium == true;
+        searchName = profile?.username.trim() ?? '';
+      }
+
+      // The public user detail currently omits Premium status, while the
+      // public user-search DTO exposes the authoritative
+      // `hasActiveSubscription` field. Match by id so similar usernames never
+      // receive the wrong badge.
+      if (!isPremium && searchName.isNotEmpty) {
+        try {
+          final result = await SearchService.instance.searchUsers(
+            searchName,
+            pageSize: 20,
+          );
+          for (final user in result.users) {
+            if (user.id == id) {
+              isPremium = user.hasActiveSubscription;
+              publicStatusResolved = true;
+              break;
+            }
+          }
+        } catch (_) {
+          // Fall through to the authenticated subscription endpoint.
+        }
+      }
+
+      if (!isPremium && !publicStatusResolved) {
+        isPremium = await SubscriptionService.instance.fetchPremiumStatus(id);
+      }
+      _premiumCache[id] = isPremium;
+      _premiumCacheTime[id] = DateTime.now();
+      return isPremium;
+    }();
+
+    _premiumInflight[id] = request;
+    request.whenComplete(() => _premiumInflight.remove(id));
+    return request;
   }
 }
